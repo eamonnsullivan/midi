@@ -8,6 +8,9 @@
                        (->Note :C 2 1/2)
                        (->Note :G 2 1/2)])
 
+(def jaws (for [duration [1/2 1/2 2/4 1/4 1/8 1/8 1/8 1/8] pitch [:E :F]]
+            (Note. pitch 2 duration)))
+
 (defprotocol MidiNote
   (to-msec [this tempo])
   (key-number [this])
@@ -30,7 +33,7 @@
          (scale (:pitch this)))))
 
   (play [this tempo midi-channel]
-    (let [velocity (or (:velocity this) 64)]
+    (let [velocity (or (:velocity this) 100)]
       (.noteOn midi-channel (key-number this) velocity)
       (Thread/sleep (to-msec this tempo)))))
 
@@ -39,3 +42,18 @@
     (let [channel (aget (.getChannels synth) 0)]
       (doseq [note notes]
         (play note tempo channel)))))
+
+;; (defn john-cage
+;;   "A simulated John Cage"
+;;   []
+;;   (let [min-duration 250
+;;         min-velocity 120
+;;         rand-note (reify
+;;                     MidiNote
+;;                     (to-msec [this tempo] (+ (rand-int 1000) min-duration))
+;;                     (key-number [this] (rand-int 100))
+;;                     (play [this tempo midi-channel]
+;;                       (let [velocity (+ (rand-int 100) min-velocity)]
+;;                         (.noteOn midi-channel (key-number this) velocity)
+;;                         (Thread/sleep (to-msec this tempo)))))]
+;;     (perform (repeat 15 rand-note))))
